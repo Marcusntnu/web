@@ -32,6 +32,7 @@ INSTALLED_APPS = [
     'groups',
     'web',
     'make_queue',
+    'internal',
     'social_django',
     'news',
     'ckeditor',
