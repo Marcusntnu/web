@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_hosts',
     'groups',
     'web',
     'make_queue',
@@ -39,7 +40,14 @@ INSTALLED_APPS = [
     'contentbox',
 ]
 
+# When using more than one sub-domain, the session cookie domain has to be set so
+# that the sub-domains can use the same session
+SESSION_COOKIE_DOMAIN = "local.test.pe"
+
 MIDDLEWARE = [
+    # Must be on top, resolves host information of request
+    'django_hosts.middleware.HostsRequestMiddleware',
+
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -47,6 +55,9 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
+    # Must be on the bottom, resolves host information of response
+    'django_hosts.middleware.HostsResponseMiddleware',
 ]
 
 ROOT_URLCONF = 'web.urls'
@@ -132,6 +143,10 @@ SOCIAL_AUTH_DATAPORTEN_FEIDE_KEY = SOCIAL_AUTH_DATAPORTEN_KEY
 SOCIAL_AUTH_DATAPORTEN_FEIDE_SECRET = SOCIAL_AUTH_DATAPORTEN_SECRET
 
 SOCIAL_AUTH_NEW_USER_REDIRECT_URL = SOCIAL_AUTH_LOGIN_REDIRECT_URL
+
+#
+ROOT_HOSTCONF = 'web.hosts'
+DEFAULT_HOST = 'main'
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.11/topics/i18n/
