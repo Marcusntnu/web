@@ -147,6 +147,7 @@ SOCIAL_AUTH_NEW_USER_REDIRECT_URL = SOCIAL_AUTH_LOGIN_REDIRECT_URL
 #
 ROOT_HOSTCONF = 'web.hosts'
 DEFAULT_HOST = 'main'
+PARENT_HOST = 'local.test.pe:8000'
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.11/topics/i18n/
