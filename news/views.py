@@ -217,7 +217,7 @@ class DuplicateTimePlaceView(PermissionRequiredMixin, View):
     def get(self, request, pk):
         timeplace = get_object_or_404(TimePlace, pk=pk)
         now = timezone.now()
-        if now.date() > timeplace.start_date or now.date() == timeplace.start_date and now.time() > timeplace.start_time:
+        if now.date() > timeplace.start_date:
             delta_days = (timezone.now().date() - timeplace.start_date).days
             weeks = math.ceil(delta_days / 7)
         else:
@@ -245,7 +245,7 @@ class NewTimePlaceView(PermissionRequiredMixin, View):
 class AdminArticleToggleView(PermissionRequiredMixin, View):
     model = Article
     permission_required = (
-        'news.edit_article',
+        'news.change_article',
     )
 
     def post(self, request):
@@ -267,14 +267,14 @@ class AdminArticleToggleView(PermissionRequiredMixin, View):
 class AdminEventToggleView(AdminArticleToggleView):
     model = Event
     permission_required = (
-        'news.edit_event',
+        'news.change_event',
     )
 
 
 class AdminTimeplaceToggleView(AdminArticleToggleView):
     model = TimePlace
     permission_required = (
-        'news.edit_timeplace',
+        'news.change_timeplace',
     )
 
 

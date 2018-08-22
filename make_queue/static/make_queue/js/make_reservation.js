@@ -2,7 +2,7 @@ let reservations = [];
 let reservationCalendarDate = new Date();
 
 function getFutureReservations(machine_type, machine_id, force_new_time) {
-    let jsonUrl = "/reservation/json/" + machine_type + "/" + machine_id;
+    let jsonUrl = langPrefix + "/reservation/json/" + machine_type + "/" + machine_id;
     let currentUrl = document.location.href;
     if (currentUrl.match(".+/reservation/change/[a-zA-Z0-9-]+/[0-9]+/"))
         jsonUrl += currentUrl.slice(currentUrl.slice(0, currentUrl.length - 1).lastIndexOf("/"), currentUrl.length - 1) + "/";
@@ -34,13 +34,14 @@ function updateReservationCalendar() {
     let year = reservationCalendarDate.getFullYear();
     let machine_type = $("#machine_type_dropdown").dropdown("get value");
     let machine_pk = $("#machine_name_dropdown").dropdown("get value");
-    $.get("/reservation/calendar/" + year + "/" + weekNumber + "/" + machine_type + "/" + machine_pk + "/", {}, (data) => {
+    $.get(langPrefix + "/reservation/calendar/" + year + "/" + weekNumber + "/" + machine_type + "/" + machine_pk + "/", {}, (data) => {
         $("#reservation_calendar").html(data);
+        setupReservationCalendar();
     })
 }
 
 function updateMaxReservationTime(machine_type) {
-    $.get("/reservation/quota/json/" + machine_type + "/", {}, (data) => {
+    $.get(langPrefix + "/reservation/quota/json/" + machine_type + "/", {}, (data) => {
         $("#reserve_form").data("max-time-reservation", data);
         let start_date = $("#start_time").calendar("get date");
         if (start_date)
@@ -69,21 +70,39 @@ function isNonReservedDate(date) {
     return true;
 }
 
-function isReservedHour(date) {
-    let endHour = new Date(date.valueOf());
-    endHour.setHours(endHour.getHours() + 1);
-    for (let index = 0; index < reservations.length; index++) {
-        if (date >= reservations[index].start_time && endHour <= reservations[index].end_time) return true;
+function isCompletelyReserved(start, end) {
+    let maxDifference = 5*60*1000;
+    let reservationsPeriod = reservationsInPeriod(start, end);
+    if (!reservationsPeriod.length) return false;
+    reservationsPeriod.sort((a,b) => a.start_time - b.start_time);
+    let currentTime = start;
+    for (let index = 0; index < reservationsPeriod.length; index++) {
+        if (reservationsPeriod[index].start_time > new Date(currentTime.valueOf() + maxDifference)) return false;
+        currentTime = reservationsPeriod[index].end_time;
     }
-    return false;
+    return currentTime >= new Date(end.valueOf() - maxDifference);
+}
+
+function reservationsInPeriod(start, end) {
+    let reservationsPeriod = [];
+    for (let index = 0; index < reservations.length; index++) {
+        let reservation = reservations[index];
+        if ((reservation.start_time <= start && reservation.end_time > start) ||
+            (reservation.start_time > start && reservation.end_time < end) ||
+            (reservation.start_time < end && reservation.end_time > end))
+            reservationsPeriod.push(reservation);
+    }
+    return reservationsPeriod;
 }
 
 function getMaxDateReservation(date) {
     let maxDate = new Date(date.valueOf());
     if ($("#event_checkbox input").is(':checked') || $("#special_checkbox input").is(":checked"))
         maxDate.setDate(maxDate.getDate() + 7);
-    else
+    else {
         maxDate.setHours(maxDate.getHours() + parseFloat($("#reserve_form").data("max-time-reservation")));
+        if (maxDate > maximum_day) maxDate = maximum_day;
+    }
     for (let index = 0; index < reservations.length; index++) {
         if (date <= reservations[index].start_time && reservations[index].start_time < maxDate)
             maxDate = new Date(reservations[index].start_time.valueOf());
@@ -93,7 +112,6 @@ function getMaxDateReservation(date) {
 
 function setEndDate() {
     let currentStartDate = $("#start_time").calendar("get date");
-    console.log(currentStartDate);
     if (currentStartDate !== null) {
         $("#end_time").calendar("setting", 'maxDate', getMaxDateReservation(currentStartDate));
     }
@@ -101,12 +119,21 @@ function setEndDate() {
 
 $("#start_time").calendar({
         minDate: new Date(),
+        maxDate: maximum_day,
         ampm: false,
         endCalendar: $("#end_time"),
         initialDate: null,
+        firstDayOfWeek: 1,
         isDisabled: function (date, mode) {
             if (mode === "minute") return !isNonReservedDate(date);
-            if (mode === "hour") return isReservedHour(date);
+            if (mode === "hour") {
+                date.setMinutes(0, 0, 0);
+                return isCompletelyReserved(date, new Date(date.valueOf() + 60*60*1000));
+            }
+            if (mode === "day") {
+                date.setHours(0, 0, 0, 0);
+                return isCompletelyReserved(date, new Date(date.valueOf() + 24*60*60*1000));
+            }
             return false;
         },
         onChange: function (value) {
@@ -122,6 +149,7 @@ $("#start_time").calendar({
 
 $("#end_time").calendar({
     ampm: false,
+    firstDayOfWeek: 1,
     startCalendar: $("#start_time"),
 });
 
@@ -131,6 +159,9 @@ $('#event_checkbox').checkbox({
         $("#event_name_input").toggleClass("make_hidden", !$(this).is(':checked'));
         if ($(this).is(':checked')) {
             $('#special_checkbox').checkbox("uncheck");
+            $("#start_time").calendar("setting", "maxDate", null);
+        } else {
+            $("#start_time").calendar("setting", "maxDate", maximum_day);
         }
         setEndDate();
     },
@@ -140,6 +171,9 @@ $('#special_checkbox').checkbox({
         $("#special_input").toggleClass("make_hidden", !$(this).is(':checked'));
         if ($(this).is(':checked')) {
             $('#event_checkbox').checkbox("uncheck");
+            $("#start_time").calendar("setting", "maxDate", null);
+        } else {
+            $("#start_time").calendar("setting", "maxDate", maximum_day);
         }
         setEndDate();
     },
@@ -206,22 +240,40 @@ $('form').submit(function (event) {
     $("#end_time input").first().val(formatDate($("#end_time").calendar("get date")));
 });
 
-$("#previous_week").click(() => {
-    reservationCalendarDate.setDate(reservationCalendarDate.getDate() - 7);
-    updateReservationCalendar();
-});
+function setupReservationCalendar() {
 
+    $("#now_button").click(() => {
+        reservationCalendarDate = new Date();
+        updateReservationCalendar();
+    });
 
-$("#next_week").click(() => {
-    reservationCalendarDate.setDate(reservationCalendarDate.getDate() + 7);
-    updateReservationCalendar();
-});
+    $("#prev_week_button").click(() => {
+        reservationCalendarDate.setDate(reservationCalendarDate.getDate() - 7);
+        updateReservationCalendar();
+    });
+
+    $("#next_week_button").click(() => {
+        reservationCalendarDate.setDate(reservationCalendarDate.getDate() + 7);
+        updateReservationCalendar();
+    });
+
+}
+
+setupReservationCalendar();
 
 $('.message .close').on('click', function () {
     $(this).closest('.message').transition('fade');
 });
 
-if($("#start_time").calendar("get date") !== null) {
+if ($("#start_time").calendar("get date") !== null) {
     reservationCalendarDate = $("#start_time").calendar("get date");
 }
 updateReservationCalendar();
+
+function timeSelectionPopupHTML(date, startTime, endTime, machine) {
+    return $("<div>").addClass("ui make_yellow button").html(gettext("Choose time")).click(() => {
+        $("#start_time").calendar("set date", date.slice(3, 6) + date.slice(0, 3) + date.slice(6) + " " + startTime);
+        $("#end_time").calendar("set date", date.slice(3, 6) + date.slice(0, 3) + date.slice(6) + " " + endTime);
+        $("body").mousedown();
+    });
+}

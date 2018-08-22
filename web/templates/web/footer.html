@@ -1,4 +1,5 @@
 {% load staticfiles %}
+{% load i18n %}
 
 <link rel="stylesheet" type="text/css" href="{% static "web/css/footer.css" %}">
 
@@ -8,40 +9,43 @@
             <div class="logo">
                 <img src="{% static "web/img/logo_allwhite.svg" %}">
             </div>
-            <a href="http://s.mazemap.com/2zleDaH">Makerverkstedet<br>Realfagbygget U1<br>7034 Trondheim</a>
+            <a href="http://s.mazemap.com/2zleDaH" target="_blank">{% trans "Makerverkstedet<br>Realfagbygget U1<br>7034 Trondheim" %}</a>
         </div>
         <div class="ui social list">
             <div class="item">
-                <a href="http://www.facebook.com/MAKENTNU/"><i class="facebook f icon"></i></a>
+                <a href="http://www.facebook.com/MAKENTNU/" target="_blank"><i class="facebook f icon"></i></a>
             </div>
             <div class="item">
-                <a href="http://makentnu.slack.com/"><i class="slack icon"></i></a>
+                <a href="http://makentnu.slack.com/" target="_blank"><i class="slack icon"></i></a>
             </div>
             <div class="item">
-                <a href="http://github.com/MAKENTNU"><i class="github alternate icon"></i></a>
+                <a href="http://github.com/MAKENTNU" target="_blank"><i class="github alternate icon"></i></a>
             </div>
             <div class="item">
                 <a href="mailto:styret@makentnu.no"><i class="mail icon"></i></a>
             </div>
-            <div class = "copyright">© 2018 MAKE NTNU</div>
-
         </div>
-        <div class="ui list">
-            <div class="item">
-                <div class="content">
-                    <a href="{% url 'about' %}">Om oss</a>
+        <div class="two-cols">
+            <div class="ui list">
+                <div class="item">
+                    <a href="https://www.sit.no" target="_blank">
+                        <img class="sit" src="{% static "web/img/sit-logo-standard.svg" %}">
+                    </a>
                 </div>
             </div>
-            <div class="item">
-                <div class="content">
-                    <a href="{% url 'committee_list' %}">Komiteer</a>
+            <div class="ui list">
+                <div class="item">
+                    <div class="content">
+                        <a href="{% url 'about' %}">Om oss</a>
+                    </div>
                 </div>
-            </div>
-            <div class="item">
-                <div class="content">
-                    <a href="{% url 'cookies' %}">Cookies</a>
+                <div class="item">
+                    <div class="content">
+                        <a href="{% url 'cookies' %}">Cookies</a>
+                    </div>
                 </div>
             </div>
         </div>
+        <div class="copyright">© {% now "Y" %} MAKE NTNU</div>
     </div>
 </div>
