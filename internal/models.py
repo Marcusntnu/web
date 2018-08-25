@@ -30,6 +30,7 @@ class Member(models.Model):
         permissions = (
             ("is_internal", "Is a member of MAKE NTNU"),
             ("can_register_new_member", "Can register new member"),
+            ("can_edit_group_membership", "Can edit the groups a member is part of, including (de)activation")
         )
 
     def __str__(self):
