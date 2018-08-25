@@ -31,3 +31,7 @@
 .property-status-invalid {
     background-color: #db2828 !important;
 }
+
+td span.right.floated {
+    float: right;
+}

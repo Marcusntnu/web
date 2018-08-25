@@ -22,24 +22,24 @@
             </a>
         </div>
 
-        <table class="ui celled table">
+        <table class="ui celled table" id="member-table">
             <thead>
-            <tr>
-                <th>Navn</th>
-                <th>Komité</th>
-                <th>Epost</th>
-                <th>Telefonnummer</th>
-                <th>Studieretning</th>
-                <th>Kortnummer</th>
-                <th>Internsystemer</th>
+            <tr id="table-header">
+                <th>Navn <i class="icon sort down"></i></th>
+                <th>Komité <i class="icon sort"></i></th>
+                <th>Epost <i class="icon sort"></i></th>
+                <th>Telefonnummer <i class="icon sort"></i></th>
+                <th>Studieretning <i class="icon sort"></i></th>
+                <th>Kortnummer <i class="icon sort"></i></th>
+                <th>Internsystemer <i class="icon sort"></i></th>
             </tr>
             </thead>
             {% for member in members %}
                 <tr class="member-row" data-search-text="{{ member.user.get_full_name }}"
                     data-active="{{ member.active }}">
-                    <td>
+                    <td data-sort="{{ member.user.get_full_name }}">
                         {{ member.user.get_full_name }}
-                        <span style="float: right;">
+                        <span class="right floated">
                             {% if member.user == request.user or perms.internal.can_edit_group_membership %}
                                 <a href="{% url "change_member" member %}">
                                     <i class="pencil icon" title="Endre informasjon"></i>
@@ -87,19 +87,19 @@
                             {% endif %}
                         </span>
                     </td>
-                    <td>
+                    <td data-sort="{{ member.get_committee }}">
                         {{ member.get_committee }}
                     </td>
-                    <td>{{ member.email }}</td>
-                    <td>{{ member.phone_number }}</td>
-                    <td>{{ member.study_program }}</td>
-                    <td>{{ member.card_number }}</td>
+                    <td data-sort="{{ member.email }}">{{ member.email }}</td>
+                    <td data-sort="{{ member.phone_number }}">{{ member.phone_number }}</td>
+                    <td data-sort="{{ member.study_program }}">{{ member.study_program }}</td>
+                    <td data-sort="{{ member.card_number }}">{{ member.card_number }}</td>
 
                     {% localize off %}
                         {% with member.properties_status as properties_status %}
                             <td class="member-property-status" style="
                                     background: -webkit-linear-gradient(left, #21ba45 {{ properties_status }}%, #db2828 {{ properties_status }}%);
-                                    ">
+                                    " data-sort={{ properties_status }}>
                                 <div class="member-property-status-popup-trigger">{{ properties_status|floatformat:2 }}%</div>
                                 <div class="ui flowing popup right transition hidden">
                                     <b>System statuser:</b>
@@ -138,6 +138,8 @@
             $(this).find('#activation-modal').modal('show');
         });
 
+        let sort_column = 0;
+        let order = "asc";
         let search = "";
         let active = "True";
 
@@ -151,14 +153,43 @@
             menuNav.removeClass('active');
             $(this).addClass('active');
             active = $(this).data("value");
-            filter()
+            filter();
         });
 
         function filter() {
-            $(".member-row").each(function () {
+            $(".member-row").sort(order_rows).each(function () {
                 $(this).toggleClass("make-hidden", !$(this).data("search-text").toLowerCase().includes(search) || $(this).data("active") !== active);
-            });
+            }).appendTo($("#member-table"));
         }
+
+        function order_rows(row1, row2) {
+            const value_row1 = $($(row1).children()[sort_column]).data("sort");
+            const value_row2 = $($(row2).children()[sort_column]).data("sort");
+
+            if (order === "asc") {
+                return value_row1 > value_row2;
+            }
+            return value_row2 > value_row1;
+        }
+
+        $(".icon.sort").parent().click(function (e) {
+            const selected_column = $(this).parent().children().index($(this));
+            if (selected_column === sort_column) {
+                if (order === "asc") {
+                    $(this).find("i").removeClass("down").addClass("up");
+                    order = "desc"
+                } else {
+                    $(this).find("i").addClass("down").removeClass("up");
+                    order = "asc"
+                }
+            } else {
+                $($("#table-header").children()[sort_column]).find("i").removeClass("down").removeClass("up");
+                sort_column = selected_column;
+                order = "asc";
+                $(this).find("i").addClass("down")
+            }
+            filter();
+        });
 
         filter();
 
