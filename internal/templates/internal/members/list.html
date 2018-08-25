@@ -39,11 +39,53 @@
                     data-active="{{ member.active }}">
                     <td>
                         {{ member.user.get_full_name }}
-                        {% if member.user == request.user or perms.internal.can_edit_group_membership %}
-                            <a href="{% url "change_member" member %}">
-                                <i class="pencil icon"></i>
+                        <span style="float: right;">
+                            {% if member.user == request.user or perms.internal.can_edit_group_membership %}
+                                <a href="{% url "change_member" member %}">
+                                    <i class="pencil icon" title="Endre informasjon"></i>
+                                </a>
+                            {% endif %}
+                            {% if member.user == request.user or perms.internal.can_register_new_member %}
+                                <a href="{% url "activation_member" member %}" class="activation confirm">
+                                <i class="icon {% if member.active %}red{% else %}green{% endif %} flag"
+                                   title="Sett medlem til {% if member.active %}in{% endif %}aktivt"></i>
+                                <div id="activation-modal" class="ui basic small modal">
+                                    <div class="ui icon header">
+                                        {% if member.active %}
+                                            <i class="red flag icon"></i>
+                                            Er du sikker på at du vil deaktivere medlemskapet til brukeren? Dette vil
+                                            fjerne brukeren fra alle komitéer og fjerne alle relaterte tilganger.
+                                            Styremedlemmer kan reaktiver medlemskapet i etterkant.
+                                        {% else %}
+                                            <i class="green flag icon"></i>
+                                            Er du sikker på at du vil aktivere medlemskapet til brukeren? Dette vil
+                                            legge brukeren til komitéene brukeren sist var medlem av, og gi brukeren de
+                                            respektive tilgangene.
+                                        {% endif %}
+                                    </div>
+                                    <div class="actions">
+                                        <div class="ui red inverted delete button">
+                                            {% if member.active %}
+                                                <i class="red flag icon"></i>
+                                                Deaktiver
+                                            {% else %}
+                                                <i class="green flag icon"></i>
+                                                Aktiver
+                                            {% endif %}
+                                        </div>
+                                        <div class="ui white ok inverted button">
+                                            <i class="cancel icon"></i>
+                                            {% if member.active %}
+                                                Kanseller deaktiveringen
+                                            {% else %}
+                                                Kanseller aktiveringen
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
                             </a>
-                        {% endif %}
+                            {% endif %}
+                        </span>
                     </td>
                     <td>
                         {{ member.get_committee }}
@@ -83,7 +125,19 @@
         {% endif %}
     </div>
 
+    <form id="delete-form" method="post">{% csrf_token %}</form>
+
     <script>
+        $('.activation.confirm').click(function (e) {
+            e.preventDefault();
+            var url = $(this).attr('href');
+            $('#delete-form').attr('action', url);
+            $(this).find('#activation-modal .delete.button').click(function (e) {
+                $('#delete-form').submit();
+            });
+            $(this).find('#activation-modal').modal('show');
+        });
+
         let search = "";
         let active = "True";
 

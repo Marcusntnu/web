@@ -1,1 +1,86 @@
 {% extends "internal/base.html" %}
+
+
+{% block body %}
+    <div class="ui container">
+        <h1>Endre medlemsinformasjon</h1>
+        <form class="ui form" method="POST">
+            {% csrf_token %}
+            <div class="ui two fields">
+                <div class="ui field">
+                    <label>Navn:</label>
+                    <div class="ui disabled input">
+                        <input type="text" value="{{ member.user.get_full_name }}" name="name">
+                    </div>
+                </div>
+                <div class="ui field">
+                    <label>E-post:</label>
+                    <div class="ui input">
+                        <input type="text" value="{{ member.email }}" name="email">
+                    </div>
+                </div>
+            </div>
+            <div class="ui two fields">
+                <div class="ui field">
+                    <label>Studieretning:</label>
+                    <div class="ui input">
+                        <input type="text" value="{{ member.study_program }}" name="study_program">
+                    </div>
+                </div>
+                <div class="ui field">
+                    <label>Telefonnummer:</label>
+                    <div class="ui input">
+                        <input type="text" value="{{ member.phone_number }}" name="phone_number">
+                    </div>
+                </div>
+            </div>
+            <div class="ui two fields">
+                <div class="ui field">
+                    <label>Kortnummer (NTNU):</label>
+                    <div class="ui input">
+                        <input type="text" value="{{ member.card_number }}" name="card_number">
+                    </div>
+                </div>
+            </div>
+            <hr style="border-top: 1px solid #acacac; border-bottom: 1px solid #e4e4e4; margin: 2em 0;">
+            <div class="ui two fields">
+                <div class="ui field">
+                    <h3>Komitéer</h3>
+                    <select multiple="multiple" name="committees" class="ui fluid dropdown">
+                        {% for committee in committees %}
+                            <option value="{{ committee.pk }}" {% if committee in user_committees %}selected{% endif %}>
+                                {{ committee.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    <label style="margin-top: 1.2em;">Role:</label>
+                    <div class="ui {% if not perms.internal.can_edit_group_membership %}disabled{% endif %} input">
+                        <input type="text" value="{{ member.role }}" name="role">
+                    </div>
+                </div>
+                <div class="ui field">
+                    <h3>Internsystemer</h3>
+                    {% for system in member.memberproperty_set.all %}
+                        <div class="ui checkbox-row">
+                            <div class="ui checkbox" style="padding-top: 0.6em;">
+                                <label>{{ system.name }}</label>
+                                <input type="checkbox" value="{{ system.name }}" name="system"
+                                       {% if system.value %}checked="checked"{% endif %}>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="ui two fields">
+            </div>
+            <hr style="border-top: 1px solid #acacac; border-bottom: 1px solid #e4e4e4; margin: 2em 0;">
+            <button class="ui right floated blue button" type="submit">
+                Lagre endringer
+            </button>
+        </form>
+    </div>
+    <script>
+        $(".ui.checkbox").checkbox();
+        $(".ui.dropdown").dropdown();
+    </script>
+{% endblock %}

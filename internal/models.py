@@ -61,20 +61,23 @@ class Member(models.Model):
             # as to be able to remove the permissions for the user, while still keeping history of inactive members
             # for possible reactivation of their membership and general bookkeeping.
             user = User.objects.get_or_create(username="dummy|" + self.user.username,
-                                              first_name=self.user.first_name, last_name=self.user.last_name,
-                                              password=os.urandom(256))
+                                              first_name=self.user.first_name, last_name=self.user.last_name)[0]
         else:
-            user = User.objects.get(username=self.user.username.split("|")[1])
+            users = User.objects.filter(username=self.user.username.split("|")[1])
 
-        # Older users do not have an account on the website, and can therefore not be activated
-        if user.exists():
-            for group in self.user.groups:
-                group.user_set.add(user)
-                group.user_set.remove(self.user)
+            # Older members do not have an account on the website, and can therefore not be activated
+            if not users.exists():
+                return
+            user = users.first()
 
-            self.user = user
-            self.active = not self.active
-        return self.active
+        for group in self.user.groups.all():
+            group.user_set.add(user)
+            group.user_set.remove(self.user)
+
+        self.user = user
+        self.active = not self.active
+
+        self.save()
 
 
 class MemberProperty(models.Model):
