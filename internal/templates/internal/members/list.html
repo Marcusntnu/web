@@ -1,0 +1,112 @@
+{% extends "internal/base.html" %}
+{% load staticfiles %}
+{% load l10n %}
+
+{% block head %}
+    <link rel="stylesheet" type="text/css" href="{% static 'internal/css/list.css' %}"/>
+{% endblock head %}
+
+{% block body %}
+    <div class="ui container">
+        <h1>Medlemsliste</h1>
+        <div class="ui input">
+            <input type="text" placeholder="Søk på medlemmer..." id="member-search">
+        </div>
+
+        <div class="ui compact menu right floated">
+            <a class="item active" data-value="True">
+                Aktive
+            </a>
+            <a class="item" data-value="False">
+                Inaktive
+            </a>
+        </div>
+
+        <table class="ui celled table">
+            <thead>
+            <tr>
+                <th>Navn</th>
+                <th>Komité</th>
+                <th>Epost</th>
+                <th>Telefonnummer</th>
+                <th>Studieretning</th>
+                <th>Kortnummer</th>
+                <th>Internsystemer</th>
+            </tr>
+            </thead>
+            {% for member in members %}
+                <tr class="member-row" data-search-text="{{ member.user.get_full_name }}"
+                    data-active="{{ member.active }}">
+                    <td>
+                        {{ member.user.get_full_name }}
+                        <a href="">
+                            <i class="pencil icon"></i>
+                        </a>
+                    </td>
+                    <td></td>
+                    <td>{{ member.email }}</td>
+                    <td>{{ member.phone_number }}</td>
+                    <td>{{ member.study_program }}</td>
+                    <td>{{ member.card_number }}</td>
+
+                    {% localize off %}
+                        {% with member.properties_status as properties_status %}
+                            <td class="member-property-status" style="
+                                    background: -webkit-linear-gradient(left, #21ba45 {{ properties_status }}%, #db2828 {{ properties_status }}%);
+                                    ">
+                                <div class="member-property-status-popup-trigger">{{ properties_status|floatformat:2 }}%</div>
+                                <div class="ui flowing popup right transition hidden">
+                                    <b>System statuser:</b>
+                                    {% for property in member.memberproperty_set.all %}
+                                        <div class="property-status {% if not property.value %}property-status-invalid{% endif %}">
+                                            {{ property.name }}
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </td>
+                        {% endwith %}
+                    {% endlocalize %}
+                </tr>
+            {% endfor %}
+        </table>
+
+        <a href="{% url 'new_member' %}">
+            <div class="ui blue button right floated">
+                Registrer nytt medlem
+            </div>
+        </a>
+    </div>
+
+    <script>
+        let search = "";
+        let active = "True";
+
+        $("#member-search").on("keyup", function (e) {
+            search = e.target.value.toLowerCase();
+            sort();
+        });
+
+        const menuNav = $('.ui.compact.menu .item');
+        menuNav.on('click', function (item) {
+            menuNav.removeClass('active');
+            $(this).addClass('active');
+            active = $(this).data("value");
+            sort()
+        });
+
+        function sort() {
+            console.log(search, active);
+            $(".member-row").each(function () {
+                $(this).toggleClass("make-hidden", !$(this).data("search-text").toLowerCase().includes(search) || $(this).data("active") !== active);
+            });
+        }
+
+        sort();
+
+        $(".member-property-status-popup-trigger").popup({
+            on: "hover"
+        })
+    </script>
+{% endblock body %}
+
+

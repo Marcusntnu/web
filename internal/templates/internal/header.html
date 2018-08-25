@@ -1,0 +1,25 @@
+{% load staticfiles %}
+{% load hosts %}
+
+<link rel="stylesheet" type="text/css" href="{% static "web/css/header.css" %}">
+
+<div class="nav">
+    <div class="burger">
+        <i class="sidebar icon"></i>
+    </div>
+    <div class="logo">
+        <a href="{% url "home" %}">
+            <img class="limg large" src="{% static "web/img/logo_white.svg" %}">
+            <img class="limg medium" src="{% static "web/img/logo_make.svg" %}">
+            <img class="limg small" src="{% static "web/img/logo_m.svg" %}">
+        </a>
+    </div>
+    <div class="ui secondary inverted menu">
+        <a class="item" href="{% url "members" %}">
+            Medlemsliste
+        </a>
+        <a class="item" href="{% host_url "front-page" host "main" "www" %}">
+            Offentlig side
+        </a>
+    </div>
+</div>

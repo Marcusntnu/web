@@ -1,0 +1,49 @@
+{% extends 'internal/base.html' %}
+
+{% block body %}
+    <div class="ui container">
+        <h1>Nytt medlem</h1>
+        <form class="ui form" method="POST">
+            {% csrf_token %}
+            <div class="field">
+                <label>Velg bruker:</label>
+                <div class="ui fluid search selection dropdown" id="user_dropdown">
+                    <input type="hidden" name="user">
+                    <div class="default text">
+                        Velg bruker
+                    </div>
+                    <i class="dropdown icon"></i>
+                    <div class="menu">
+                        {% for user in users %}
+                            <div class="item" data-value="{{ user.pk }}">
+                                {{ user.get_full_name }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            <div class="field">
+                <label>Velg komité:</label>
+                <div class="ui fluid selection dropdown" id="committee_dropdown">
+                    <input type="hidden" name="committee">
+                    <div class="default text">
+                        Velg komité
+                    </div>
+                    <i class="dropdown icon"></i>
+                    <div class="menu">
+                        {% for committee in committees %}
+                            <div class="item" data-value="{{ committee.pk }}">
+                                {{ committee.name }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            <button class="ui button blue right floated" type="submit">Legg til som medlem</button>
+        </form>
+    </div>
+
+    <script>
+        $(".dropdown").dropdown();
+    </script>
+{% endblock body %}
