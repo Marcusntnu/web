@@ -1,10 +1,14 @@
+import os
+
 from django.contrib.auth.models import User
 from django.db import models
+
+from groups.models import Committee
 
 
 class Member(models.Model):
     email = models.fields.EmailField(null=True)
-    user = models.OneToOneField(User, on_delete=models.DO_NOTHING, null=True)
+    user = models.OneToOneField(User, on_delete=models.DO_NOTHING)
     role = models.fields.CharField(max_length=32)
     phone_number = models.fields.CharField(max_length=32)
     study_program = models.CharField(max_length=32)
@@ -25,13 +29,51 @@ class Member(models.Model):
     class Meta:
         permissions = (
             ("is_internal", "Is a member of MAKE NTNU"),
+            ("can_register_new_member", "Can register new member"),
         )
 
     def __str__(self):
         return self.user.get_full_name() + " - " + ["Inaktive", "Aktiv"][self.active]
 
     def properties_status(self):
-        return (sum(prop.value for prop in self.memberproperty_set.all())/len(MemberProperty.name_choices))*100
+        return (sum(prop.value for prop in self.memberproperty_set.all()) / len(MemberProperty.name_choices)) * 100
+
+    def get_committee(self):
+        committees = Committee.objects.filter(group__in=self.user.groups.all()).all()
+
+        if len(committees) == 1:
+            return committees[0].name + (" - " + self.role) * (len(self.role) != 0)
+
+        # Members of more than one committee are managers (leder) and deputies (nestleder) in their respective committee
+        for committee in committees:
+            name = committee.name
+            if name == "Styret":
+                continue
+
+            return name + " - " + self.role
+
+        return ""
+
+    def toggle_active(self):
+        if self.active:
+            # If the user is active, create a dummy user (with a random password) to keep the data of the inactive user
+            # as to be able to remove the permissions for the user, while still keeping history of inactive members
+            # for possible reactivation of their membership and general bookkeeping.
+            user = User.objects.get_or_create(username="dummy|" + self.user.username,
+                                              first_name=self.user.first_name, last_name=self.user.last_name,
+                                              password=os.urandom(256))
+        else:
+            user = User.objects.get(username=self.user.username.split("|")[1])
+
+        # Older users do not have an account on the website, and can therefore not be activated
+        if user.exists():
+            for group in self.user.groups:
+                group.user_set.add(user)
+                group.user_set.remove(self.user)
+
+            self.user = user
+            self.active = not self.active
+        return self.active
 
 
 class MemberProperty(models.Model):

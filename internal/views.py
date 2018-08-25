@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from django.shortcuts import redirect
 from django.urls import reverse
-from django.views.generic import TemplateView, FormView
+from django.views.generic import TemplateView
 
 from groups.models import Committee
 from internal.models import Member
@@ -48,6 +48,10 @@ class NewMemberView(TemplateView):
         Member.create(user=user, active=True, email=user.email)
 
         return redirect(reverse("members"))
+
+
+class ChangeMemberView(TemplateView):
+    template_name = "internal/members/change_member.html"
 
 
 class HomePageView(TemplateView):

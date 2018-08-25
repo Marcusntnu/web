@@ -26,7 +26,7 @@
             <thead>
             <tr>
                 <th>Navn</th>
-                <th>Komité</th>
+                <th>Komitéer</th>
                 <th>Epost</th>
                 <th>Telefonnummer</th>
                 <th>Studieretning</th>
@@ -39,11 +39,13 @@
                     data-active="{{ member.active }}">
                     <td>
                         {{ member.user.get_full_name }}
-                        <a href="">
+                        <a href="{% url "change_member" member %}">
                             <i class="pencil icon"></i>
                         </a>
                     </td>
-                    <td></td>
+                    <td>
+                        {{ member.get_committee }}
+                    </td>
                     <td>{{ member.email }}</td>
                     <td>{{ member.phone_number }}</td>
                     <td>{{ member.study_program }}</td>
@@ -70,11 +72,13 @@
             {% endfor %}
         </table>
 
-        <a href="{% url 'new_member' %}">
-            <div class="ui blue button right floated">
-                Registrer nytt medlem
-            </div>
-        </a>
+        {% if perms.internal.can_register_new_member %}
+            <a href="{% url 'new_member' %}">
+                <div class="ui blue button right floated">
+                    Registrer nytt medlem
+                </div>
+            </a>
+        {% endif %}
     </div>
 
     <script>
@@ -83,7 +87,7 @@
 
         $("#member-search").on("keyup", function (e) {
             search = e.target.value.toLowerCase();
-            sort();
+            filter();
         });
 
         const menuNav = $('.ui.compact.menu .item');
@@ -91,17 +95,16 @@
             menuNav.removeClass('active');
             $(this).addClass('active');
             active = $(this).data("value");
-            sort()
+            filter()
         });
 
-        function sort() {
-            console.log(search, active);
+        function filter() {
             $(".member-row").each(function () {
                 $(this).toggleClass("make-hidden", !$(this).data("search-text").toLowerCase().includes(search) || $(this).data("active") !== active);
             });
         }
 
-        sort();
+        filter();
 
         $(".member-property-status-popup-trigger").popup({
             on: "hover"
