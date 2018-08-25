@@ -35,3 +35,7 @@
 td span.right.floated {
     float: right;
 }
+
+th:hover {
+    cursor: pointer !important;
+}
