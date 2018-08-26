@@ -23,8 +23,9 @@ class NewMemberView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        inactive_usernames = [member.memberinactive.username for member in Member.objects.filter(active=False).all()]
         context.update({
-            "users": User.objects.all().filter(member__isnull=True),
+            "users": User.objects.all().filter(member__isnull=True).exclude(username__in=inactive_usernames),
             "committees": Committee.objects.all()
         })
         return context

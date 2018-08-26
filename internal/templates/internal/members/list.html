@@ -35,10 +35,10 @@
             </tr>
             </thead>
             {% for member in members %}
-                <tr class="member-row" data-search-text="{{ member.user.get_full_name }}"
+                <tr class="member-row" data-search-text="{{ member.get_name }}"
                     data-active="{{ member.active }}">
-                    <td data-sort="{{ member.user.get_full_name }}">
-                        {{ member.user.get_full_name }}
+                    <td data-sort="{{ member.get_name }}">
+                        {{ member.get_name }}
                         <span class="right floated">
                             {% if member.user == request.user or perms.internal.can_edit_group_membership %}
                                 <a href="{% url "change_member" member %}">
