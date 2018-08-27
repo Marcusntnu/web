@@ -39,3 +39,28 @@ td span.right.floated {
 th:hover {
     cursor: pointer !important;
 }
+
+@media screen and (max-width: 767px) {
+    thead {
+        display: none !important;
+    }
+
+    .mobile-header {
+        font-weight: bold;
+    }
+
+    td:first-child {
+        font-size: 1.2em;
+    }
+
+    .ui.table tr.make-hidden {
+        display: none !important;
+    }
+}
+
+@media screen and (min-width: 768px) {
+    .mobile-header {
+        display: none;
+    }
+
+}

@@ -88,18 +88,37 @@
                         </span>
                     </td>
                     <td data-sort="{{ member.get_committee }}">
-                        {{ member.get_committee }}
+                        {% if member.get_committee %}
+                            <span class="mobile-header">Komité: </span>{{ member.get_committee }}
+                        {% endif %}
                     </td>
-                    <td data-sort="{{ member.email }}">{{ member.email }}</td>
-                    <td data-sort="{{ member.phone_number }}">{{ member.phone_number }}</td>
-                    <td data-sort="{{ member.study_program }}">{{ member.study_program }}</td>
-                    <td data-sort="{{ member.card_number }}">{{ member.card_number }}</td>
+                    <td data-sort="{{ member.email }}">
+                        {% if member.email %}
+                            <span class="mobile-header">E-post: </span>{{ member.email }}
+                        {% endif %}
+                    </td>
+                    <td data-sort="{{ member.phone_number }}">
+                        {% if member.phone_number %}
+                            <span class="mobile-header">Telefonnummer: </span>{{ member.phone_number }}
+                        {% endif %}
+                    </td>
+                    <td data-sort="{{ member.study_program }}">
+                        {% if member.study_program %}
+                            <span class="mobile-header">Studieretning: </span>{{ member.study_program }}
+                        {% endif %}
+                    </td>
+                    <td data-sort="{{ member.card_number }}">
+                        {% if member.card_number %}
+                            <span class="mobile-header">Kortnummer: </span>{{ member.card_number }}
+                        {% endif %}
+                    </td>
 
                     {% localize off %}
                         {% with member.properties_status as properties_status %}
                             <td class="member-property-status" style="
                                     background: -webkit-linear-gradient(left, #21ba45 {{ properties_status }}%, #db2828 {{ properties_status }}%);
                                     " data-sort={{ properties_status }}>
+                                <span class="mobile-header">Internsystemer: </span>
                                 <div class="member-property-status-popup-trigger">{{ properties_status|floatformat:2 }}%</div>
                                 <div class="ui flowing popup right transition hidden">
                                     <b>System statuser:</b>
