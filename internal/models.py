@@ -111,3 +111,19 @@ class MemberProperty(models.Model):
     name = models.fields.CharField(max_length=32, choices=name_choices)
     value = models.fields.BooleanField()
     member = models.ForeignKey(Member, models.CASCADE)
+
+
+class Secret(models.Model):
+    name = models.fields.CharField(max_length=128)
+    groups = models.ManyToManyField(Group)
+    value = models.fields.CharField(max_length=128)
+
+    # Checks if the given user is in one or more of the groups allowed to see the secret
+    def can_see(self, user):
+        return len(set(user.groups.values_list("pk", flat=True)) & set(self.groups.values_list("pk", flat=True)))
+
+
+class SecretFavorite(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    secret = models.ForeignKey(Secret, on_delete=models.CASCADE)
+    favorite = models.fields.BooleanField()
