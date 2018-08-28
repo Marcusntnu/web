@@ -122,8 +122,16 @@ class Secret(models.Model):
     def can_see(self, user):
         return len(set(user.groups.values_list("pk", flat=True)) & set(self.groups.values_list("pk", flat=True)))
 
+    @staticmethod
+    def get_secrets(user):
+        return [secret for secret in Secret.objects.all() if secret.can_see(user)]
+
 
 class SecretFavorite(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     secret = models.ForeignKey(Secret, on_delete=models.CASCADE)
-    favorite = models.fields.BooleanField()
+
+    @staticmethod
+    def get_favorite_secrets(user):
+        return [favorite.secret for favorite in SecretFavorite.objects.filter(user=user) if
+                favorite.secret.can_see(user)]

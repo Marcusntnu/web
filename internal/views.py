@@ -4,7 +4,7 @@ from django.urls import reverse
 from django.views.generic import TemplateView
 
 from groups.models import Committee
-from internal.models import Member
+from internal.models import Member, SecretFavorite, Secret
 
 
 class MemberListView(TemplateView):
@@ -64,6 +64,7 @@ class ChangeMemberView(TemplateView):
     """
     Handling of form submit. Could perhaps use a form view, however most of it is custom adding and removal of groups
     """
+
     def post(self, request, member):
         has_permission = request.user.has_perm("internal.can_edit_group_membership")
 
@@ -106,6 +107,27 @@ class ChangeMemberView(TemplateView):
 
 class HomePageView(TemplateView):
     template_name = "internal/main.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update({
+            "favorite_secrets": SecretFavorite.get_favorite_secrets(self.request.user)
+        })
+        return context
+
+
+class SecretsView(TemplateView):
+    template_name = "internal/secrets.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        favorite_secrets = SecretFavorite.get_favorite_secrets(self.request.user)
+        context.update({
+            "favorite_secrets": favorite_secrets,
+            "non_favorite_secrets": [secret for secret in Secret.get_secrets(self.request.user) if
+                                     secret not in favorite_secrets]
+        })
+        return context
 
 
 def handle_activation(request, member):

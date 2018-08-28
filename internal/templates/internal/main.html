@@ -1,1 +1,48 @@
 {% extends "internal/base.html" %}
+
+{% block body %}
+    <div class="ui container">
+        <h1>MAKE NTNU Internside</h1>
+
+        <div style="float:right">
+            <h3><a href="{% url "secrets" %}">Passord og koder</a></h3>
+
+            {% if favorite_secrets %}
+                <table class="ui table">
+                    <thead>
+                    <tr>
+                        <th>Navn</th>
+                        <th>Passord/kode</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for secret in favorite_secrets %}
+                        <tr>
+                            <td><b>{{ secret.name }}</b></td>
+                            <td>
+                                <div class="ui green button right floated password-button">
+                                    Vis
+                                </div>
+                                <div class="make-hidden">
+                                    {{ secret.value }}
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div style="max-width: 20em; font-style: italic">
+                    Det virker ikke som om du har lagt noen passord eller koder til som favoritter. Dette kan gjøres på
+                    <a href="{% url "secrets" %}">passord og koder siden.</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        $(".password-button").click(function (e) {
+            $(this).addClass("make-hidden").siblings().removeClass("make-hidden")
+        })
+    </script>
+{% endblock %}

@@ -13,4 +13,5 @@ urlpatterns = require_internal([
     path("members/new", permission_required("internal.can_register_new_member")(NewMemberView.as_view()), name="new_member"),
     path("members/<member:member>", ChangeMemberView.as_view(), name="change_member"),
     path("members/activate/<member:member>", handle_activation, name="activation_member"),
+    path("secrets", SecretsView.as_view(), name="secrets"),
 ])

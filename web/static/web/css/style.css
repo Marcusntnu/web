@@ -112,5 +112,5 @@ p, a, h1, h2, h3, h4, h5 {
 }
 
 .make-hidden {
-    display: none;
+    display: none !important;
 }
